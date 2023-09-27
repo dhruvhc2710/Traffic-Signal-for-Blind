@@ -1,0 +1,118 @@
+#include &quot; talkie.h & quot;
+#define S0 8
+#define S1 9
+#define S2 10
+#define S3 11
+#define sensorOut 12
+Talkie voice;
+
+const uint8_t spRED[] PROGMEM = {0x6A, 0xB5, 0xD9, 0x25,
+                                 0x4A, 0xE5, 0xDB, 0xC5, 0x4F, 0x6D, 0x88, 0x95, 0x2D, 0xD2,
+                                 0xB4, 0x8F, 0x2E, 0x37, 0x0E, 0x33, 0xCF, 0x7E, 0xAA, 0x9A,
+                                 0x5C, 0xC3, 0xB4, 0xCB, 0xA9, 0x86, 0x69, 0x76, 0xD3, 0x37,
+                                 0xB7, 0xBE, 0xCD, 0xED, 0xEF, 0xB4, 0xB7, 0xB0, 0x35, 0x69,
+                                 0x94, 0x22, 0x6D, 0x10, 0x28, 0x42, 0xB9, 0x8B, 0xC8, 0x06,
+                                 0x00, 0x50, 0xCF, 0x0E, 0xEE, 0x62, 0xEA, 0xA6, 0xBC, 0xC3,
+                                 0x14, 0xBB, 0x4A, 0x9F, 0xFA, 0xA5, 0xAF, 0x25, 0x13, 0x17,
+                                 0xDF, 0x9C, 0xBF, 0xFF, 0x07};
+
+const uint8_t spGREEN[] PROGMEM =
+    {0x64, 0xD5, 0xA2, 0x22, 0x23, 0xAC, 0xB0, 0x4D, 0xF1, 0xCA, 0x2C,
+     0x55, 0x1A, 0xF6, 0x6C, 0x3F, 0x24, 0xC4, 0x72, 0x19, 0xB2, 0xCA, 0x A0, 0x62, 0x67, 0xAD, 0x8B, 0x49, 0xCD, 0x53, 0xDC, 0x8D, 0x3A, 0x 55, 0x0E, 0x4D, 0xB5, 0x3F, 0xAA, 0xD2, 0x38, 0x5C, 0xBD, 0xFD, 0xA A, 0x5A, 0x51, 0x76, 0xB7, 0x2D, 0xA3, 0xEE, 0xC5, 0xD1, 0xD2, 0x6F, 0xAD, 0x66, 0x78, 0x43, 0xDB, 0x28, 0x35, 0xDA, 0x61, 0x15, 0xED,
+     0x22, 0x4C, 0x6B, 0x87, 0x15, 0x8A, 0x73, 0xB3, 0xAD, 0xEB, 0x52, 0 xB9, 0x4E, 0xAD, 0xB6, 0xAE, 0x29, 0xB2, 0x09, 0x0B, 0x5B, 0xDA, 0x A6, 0xB1, 0xCA, 0xDC, 0x69, 0x69, 0xAB, 0xC2, 0x0A, 0x73, 0xD5, 0x A5, 0x6D, 0x9A, 0xD5, 0x3D, 0x12, 0x95, 0xB6, 0x7A, 0x15, 0xB7, 0x8 A, 0x58, 0xDA, 0xE2, 0x54, 0x32, 0x42, 0x62, 0x69, 0x8A, 0x13, 0x35,
+     0xCD, 0x48, 0xFF, 0x0F};
+
+// Stores frequency read by the photodiodes
+int redFrequency = 0;
+int greenFrequency = 0;
+int blueFrequency = 0;
+
+// Stores the red. green and blue colors
+int redColor = 0;
+int greenColor = 0;
+int blueColor = 0;
+
+void setup()
+{
+    // Setting the outputs
+    pinMode(S0, OUTPUT);
+    pinMode(S1, OUTPUT);
+    pinMode(S2, OUTPUT);
+    pinMode(S3, OUTPUT);
+
+    // Setting the sensorOut as an input
+    pinMode(sensorOut, INPUT);
+
+    // Setting frequency scaling to 20%
+    digitalWrite(S0, HIGH);
+    digitalWrite(S1, HIGH);
+
+    // Begins serial communication
+    Serial.begin(9600);
+}
+
+void loop()
+{
+    // Setting RED (R) filtered photodiodes to be read
+
+    digitalWrite(S2, LOW);
+    digitalWrite(S3, LOW);
+
+    // Reading the output frequency
+    redFrequency = pulseIn(sensorOut, LOW);
+
+    redColor = map(redFrequency, 70, 120, 255, 0);
+
+    // Printing the RED (R) value
+    Serial.print(&quot; R = &quot;);
+    Serial.print(redColor);
+    delay(100);
+
+    // Setting GREEN (G) filtered photodiodes to be read
+    digitalWrite(S2, HIGH);
+    digitalWrite(S3, HIGH);
+
+    // Reading the output frequency
+    greenFrequency = pulseIn(sensorOut, LOW);
+
+    greenColor = map(greenFrequency, 100, 199, 255, 0);
+
+    // Printing the GREEN (G) value
+    Serial.print(&quot; G = &quot;);
+    Serial.print(greenColor);
+    delay(100);
+
+    // Setting BLUE (B) filtered photodiodes to be read
+    digitalWrite(S2, LOW);
+    digitalWrite(S3, HIGH);
+
+    // Reading the output frequency
+    blueFrequency = pulseIn(sensorOut, LOW);
+
+    blueColor = map(blueFrequency, 38, 84, 255, 0);
+
+    // Printing the BLUE (B) value
+    Serial.print(&quot; B = &quot;);
+    Serial.print(blueColor);
+    delay(100);
+
+    // Checks the current detected color and prints
+    // a message in the serial monitor
+    if (redColor & gt; greenColor & amp; &amp; redColor & gt; blueColor)
+    {
+        Serial.println(&quot; -RED detected !&quot;);
+
+        voice.say(spRED);
+        delay(100);
+    }
+    if (greenColor & gt; redColor & amp; &amp; greenColor & gt; blueColor)
+    {
+        Serial.println(&quot; -GREEN detected !&quot;);
+        voice.say(spGREEN);
+        delay(100);
+    }
+    if (blueColor & gt; redColor & amp; &amp; blueColor & gt; greenColor)
+    {
+        Serial.println(&quot; -BLUE detected !&quot;);
+    }
+}
